@@ -20,8 +20,6 @@ try:
     DATABASE_URI = os.getenv("DATABASE_URI")
     engine = create_engine(DATABASE_URI)
     Session = sessionmaker(bind=engine)
-    Base.metadata.create_all(engine)
-    logging.info("Database connected and tables created.")
 except SQLAlchemyError as e:
     logging.error("Database error: %s", e)
     exit(1)

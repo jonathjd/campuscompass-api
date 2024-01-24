@@ -39,6 +39,6 @@ def get_college_data(api_key, fields, page_limit=None):
                 data_dictionary[field].append(school.get(field, None))
 
         page_num += 1  # Move to the next page
-        time.sleep(random.randint(0, 3))  # Random sleep to prevent rapid API calls
+        time.sleep(random.randint(0, 3))
 
     return data_dictionary
