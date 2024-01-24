@@ -5,7 +5,9 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: Mynetflix@2018
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
 

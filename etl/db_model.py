@@ -9,8 +9,8 @@ Base = declarative_base()
 class School(Base):
     __tablename__ = "schools"
     id = Column(Integer, primary_key=True)
-    name = Column(String)
     unitid = Column(Integer, unique=True)
+    name = Column(String)
     url = Column(String)
 
     # relationships
@@ -40,6 +40,7 @@ class Finance(Base):
     school_id = Column(Integer, ForeignKey("schools.id"))
     year = Column(Date)
     cost_attendance = Column(Float)
+    avg_net_price = Column(Float)
     in_state_tuition = Column(Float)
     out_state_tuition = Column(Float)
     tuition_per_fte = Column(Float)
@@ -73,6 +74,7 @@ class Admission(Base):
     school_id = Column(Integer, ForeignKey("schools.id"))
     year = Column(Date)
     admission_rate = Column(Float)
+    number_of_students = Column(Integer)
     sat_math_median = Column(Float)
     sat_reading_median = Column(Float)
     sat_writing_median = Column(Float)
@@ -80,6 +82,7 @@ class Admission(Base):
     act_english_median = Column(Float)
     act_writing_median = Column(Float)
     act_cumulative_median = Column(Float)
+    avg_sat_score_admitted = Column(Float)
 
     # Relationship with School
     school = relationship("School", back_populates="admissions")
