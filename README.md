@@ -6,7 +6,6 @@ Campus Compass API is a backend service designed to provide comprehensive inform
 
 ## Repository Structure
 
-- `alembic/`: Contains Alembic configurations for database migrations.
 - `app/`: Main application directory.
   - `crud/`: Contains CRUD operations.
   - `db/`: Database configurations and models.
@@ -43,12 +42,7 @@ Here's how you can set up your development environment:
    docker-compose up -d
    ```
 
-5. **Run Alembic Migrations**:
-   ```bash
-   alembic upgrade head
-   ```
-
-6. **Start the FastAPI Server**:
+5. **Start the FastAPI Server**:
    ```bash
    uvicorn app.main:app --reload
    ```
