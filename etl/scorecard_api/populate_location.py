@@ -1,6 +1,6 @@
 import logging
 from college_scorecard_api import get_college_data
-from db.models.db_model import School, Base
+from db.models.db_model import Location, Base
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
@@ -30,7 +30,24 @@ if not API_KEY:
     logging.error("Missing API key. Check your .env file.")
     exit(1)
 
-fields = ["id", "school.name", "school.school_url"]
+fields = [
+    "id",
+    "school.city",
+    "school.state",
+    "school.zip",
+    "school.region_id",
+    "school.locale",
+]
+
+
+# __tablename__ = "location"
+# id = Column(Integer, primary_key=True)
+# school_id = Column(Integer, ForeignKey("schools.id"))
+# city = Column(String, nullable=False)
+# zipcode = Column(String, nullable=False)
+# state = Column(String, nullable=False)
+# region = Column(String, nullable=False)
+# locale = Column(String)
 
 try:
     data = get_college_data(api_key=API_KEY, fields=fields)
@@ -42,10 +59,22 @@ except Exception as e:
 # Insert data into the database
 session = Session()
 try:
-    for school_data in zip(data["id"], data["school.name"], data["school.school_url"]):
-        unitid, name, url = school_data
-        school = School(unitid=unitid, name=name, url=url)
-        session.add(school)
+    for location_data in zip(
+        data["school.city"],
+        data["school.state"],
+        data["school.zip"],
+        data["school.region_id"],
+        data["school.locale"],
+    ):
+        city, state, zipcode, region_id, locale = location_data
+        location = Location(
+            city=city,
+            zipcode=zipcode,
+            state=state,
+            region=region_id,
+            locale=locale,
+        )
+        session.add(location)
     session.commit()
     logging.info("Data successfully inserted into the database.")
 except SQLAlchemyError as e:

@@ -1,15 +1,11 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, Date
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-
-
-Base = declarative_base()
+from .database import Base
 
 
 class School(Base):
     __tablename__ = "schools"
-    id = Column(Integer, primary_key=True)
-    unitid = Column(Integer, unique=True)
+    unitid = Column(Integer, primary_key=True)
     name = Column(String)
     url = Column(String)
 
@@ -23,7 +19,7 @@ class School(Base):
 class Location(Base):
     __tablename__ = "location"
     id = Column(Integer, primary_key=True)
-    school_id = Column(Integer, ForeignKey("schools.id"))
+    school_unitid = Column(Integer, ForeignKey("schools.unitid"))
     city = Column(String, nullable=False)
     zipcode = Column(String, nullable=False)
     state = Column(String, nullable=False)
@@ -37,7 +33,7 @@ class Location(Base):
 class Finance(Base):
     __tablename__ = "finance"
     id = Column(Integer, primary_key=True)
-    school_id = Column(Integer, ForeignKey("schools.id"))
+    school_unitid = Column(Integer, ForeignKey("schools.unitid"))
     year = Column(Date)
     cost_attendance = Column(Float)
     avg_net_price = Column(Float)
@@ -54,7 +50,7 @@ class Finance(Base):
 class Control(Base):
     __tablename__ = "control"
     id = Column(Integer, primary_key=True)
-    school_id = Column(Integer, ForeignKey("schools.id"))
+    school_unitid = Column(Integer, ForeignKey("schools.unitid"))
     under_investigation = Column(Boolean)
     predominant_deg = Column(String)
     highest_deg = Column(String)
@@ -71,7 +67,7 @@ class Control(Base):
 class Admission(Base):
     __tablename__ = "admission"
     id = Column(Integer, primary_key=True)
-    school_id = Column(Integer, ForeignKey("schools.id"))
+    school_unitid = Column(Integer, ForeignKey("schools.unitid"))
     year = Column(Date)
     admission_rate = Column(Float)
     number_of_students = Column(Integer)
