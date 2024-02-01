@@ -1,6 +1,12 @@
 import requests
 import time
 import random
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+API_KEY = os.getenv("API_KEY")
 
 
 def get_college_data(api_key, fields, page_limit=None):
