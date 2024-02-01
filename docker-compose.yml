@@ -23,6 +23,8 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URI: ${DATABASE_URI}
+      API_KEY: ${API_KEY}
+      
 
 volumes:
   postgres_data: 

@@ -1,10 +1,21 @@
 import requests
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from app.db.models import Base
-import os
+from app.db.models import Base, engine, SessionLocal
 
-app = FastAPI()
+Base.metadata.create_engine_all(bind=engine)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
