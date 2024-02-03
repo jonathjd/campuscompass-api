@@ -12,6 +12,7 @@ from slowapi.errors import RateLimitExceeded
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Context manager to ensure database connection is closed after request lifecycle."""
     db = SessionLocal()
     try:
         yield db
@@ -23,7 +24,6 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 
 origins = [
     "http://localhost",
@@ -41,6 +41,7 @@ app.add_middleware(
 
 @app.get("/")
 def home():
+    """Health check route."""
     return {"health_check": "OK"}
 
 
@@ -51,6 +52,16 @@ def home():
 )
 @limiter.limit("5/minute")
 def get_school_by_unitid(unitid: int, db: Session = Depends(lifespan)):
+    """
+    Retrieve a school by its unit ID with rate limiting.
+
+    Args:
+    - unitid (int): The unique identifier for the school.
+    - db (Session, optional): Database session dependency.
+
+    Returns:
+    - dict: The school information or an error message.
+    """
     db_school = db.query(models.School).filter(models.School.unitid == unitid).first()
     if db_school is None:
         raise HTTPException(
@@ -71,6 +82,18 @@ def get_schools_by_name(
     skip: int | None = 0,
     limit: int | None = 100,
 ) -> List[schemas.School]:
+    """
+    Retrieve a list of schools by name with pagination and rate limiting.
+
+    Args:
+    - school_name (str): The name or partial name to search for.
+    - db (Session, optional): Database session dependency.
+    - skip (int, optional): Number of records to skip for pagination.
+    - limit (int, optional): Maximum number of records to return.
+
+    Returns:
+    - List[schemas.School]: A list of schools matching the search criteria.
+    """
     school_name_pattern = school_name.lower() + "%"
     schools = (
         db.query(models.School)

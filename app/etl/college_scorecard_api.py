@@ -27,10 +27,9 @@ def get_college_data(api_key, fields, page_limit=None):
 
     base_url = "https://api.data.gov/ed/collegescorecard/v1/schools.json"
     data_dictionary = {field: [] for field in fields}  # Dictionary to store the data
-    page_num = 0  # Start from the first page
+    page_num = 0
 
     while True:
-        # Construct the API request URL for the current page
         api_request = f"{base_url}?fields={','.join(fields)}&api_key={api_key}&page={page_num}&per_page=100"
         response = requests.get(api_request)
         data = response.json()
@@ -44,7 +43,7 @@ def get_college_data(api_key, fields, page_limit=None):
             for field in fields:
                 data_dictionary[field].append(school.get(field, None))
 
-        page_num += 1  # Move to the next page
+        page_num += 1
         time.sleep(random.randint(0, 3))
 
     return data_dictionary
