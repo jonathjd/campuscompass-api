@@ -24,7 +24,7 @@ class Location(Base):
     zipcode = Column(String, nullable=False)
     state = Column(String, nullable=False)
     region = Column(String, nullable=False)
-    locale = Column(String)
+    locale = Column(String, nullable=True)
 
     # Relationship with School
     school = relationship("School", back_populates="locations")
