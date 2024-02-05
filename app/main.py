@@ -46,11 +46,7 @@ def home():
     return {"health_check": "OK"}
 
 
-@app.get(
-    "/v1/schools/{unitid}",
-    response_model=schemas.SchoolBase,
-    status_code=status.HTTP_200_OK,
-)
+@app.get("/v1/schools/{unitid}", status_code=status.HTTP_200_OK, response_model=None)
 @limiter.limit("5/minute")
 def get_school_by_unitid(
     unitid: int, request: Request, db: Session = Depends(lifespan)
@@ -74,9 +70,7 @@ def get_school_by_unitid(
 
 
 @app.get(
-    "/v1/schools/{school_name}",
-    response_model=List[schemas.SchoolBase],
-    status_code=status.HTTP_200_OK,
+    "/v1/schools/{school_name}", status_code=status.HTTP_200_OK, response_model=None
 )
 @limiter.limit("5/minute")
 def get_schools_by_name(
@@ -85,7 +79,7 @@ def get_schools_by_name(
     skip: int | None = 0,
     limit: int | None = 100,
     db: Session = Depends(lifespan),
-) -> List[schemas.School]:
+):
     """
     Retrieve a list of schools by name with pagination and rate limiting.
 
