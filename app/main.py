@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, status, Depends, HTTPException
 from app.db.database import SessionLocal
 from app.db import models
-from schemas import schemas
+from app.schemas import schemas
 from sqlalchemy.orm import Session
 from typing import List
 from slowapi import Limiter, _rate_limit_exceeded_handler
