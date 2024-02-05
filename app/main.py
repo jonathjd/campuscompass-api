@@ -1,7 +1,8 @@
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, status, Depends, HTTPException
-from app.db import models, SessionLocal
+from app.db.database import SessionLocal
+from app.db import models
 from schemas import schemas
 from sqlalchemy.orm import Session
 from typing import List
