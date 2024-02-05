@@ -1,6 +1,6 @@
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, status, Depends, HTTPException
+from fastapi import FastAPI, status, Depends, HTTPException, Request
 from app.db.database import SessionLocal
 from app.db import models
 from app.schemas import schemas
@@ -52,7 +52,9 @@ def home():
     status_code=status.HTTP_200_OK,
 )
 @limiter.limit("5/minute")
-def get_school_by_unitid(unitid: int, db: Session = Depends(lifespan)):
+def get_school_by_unitid(
+    unitid: int, request: Request, db: Session = Depends(lifespan)
+):
     """
     Retrieve a school by its unit ID with rate limiting.
 
@@ -79,9 +81,10 @@ def get_school_by_unitid(unitid: int, db: Session = Depends(lifespan)):
 @limiter.limit("5/minute")
 def get_schools_by_name(
     school_name: str,
-    db: Session = Depends(lifespan),
+    request: Request,
     skip: int | None = 0,
     limit: int | None = 100,
+    db: Session = Depends(lifespan),
 ) -> List[schemas.School]:
     """
     Retrieve a list of schools by name with pagination and rate limiting.
