@@ -46,7 +46,7 @@ def home():
     return {"health_check": "OK"}
 
 
-@app.get("/v1/schools/{unitid}", status_code=status.HTTP_200_OK, response_model=None)
+@app.get("/v1/schools/{unitid}", status_code=status.HTTP_200_OK)
 @limiter.limit("5/minute")
 def get_school_by_unitid(
     unitid: int, request: Request, db: Session = Depends(lifespan)
@@ -69,9 +69,7 @@ def get_school_by_unitid(
     return db_school
 
 
-@app.get(
-    "/v1/schools/{school_name}", status_code=status.HTTP_200_OK, response_model=None
-)
+@app.get("/v1/schools/{school_name}", status_code=status.HTTP_200_OK)
 @limiter.limit("5/minute")
 def get_schools_by_name(
     school_name: str,
