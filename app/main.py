@@ -48,7 +48,7 @@ def home():
 
 @app.get(
     "/v1/schools/{unitid}",
-    response_model=schemas.School,
+    response_model=schemas.SchoolBase,
     status_code=status.HTTP_200_OK,
 )
 @limiter.limit("5/minute")
@@ -75,7 +75,7 @@ def get_school_by_unitid(
 
 @app.get(
     "/v1/schools/{school_name}",
-    response_model=List[schemas.School],
+    response_model=List[schemas.SchoolBase],
     status_code=status.HTTP_200_OK,
 )
 @limiter.limit("5/minute")
