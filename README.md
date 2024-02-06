@@ -6,15 +6,26 @@ Campus Compass API is a backend service designed to provide comprehensive inform
 
 ## Repository Structure
 
-- `app/`: Main application directory.
-  - `crud/`: Contains CRUD operations.
-  - `db/`: Database configurations and models.
-  - `schemas/`: Pydantic schemas for data validation and serialization.
-  - `main.py`: Entry point for the FastAPI application.
-- `docker-compose.yml` and `dockerfile`: Docker configurations for containerization.
-- `etl/`: ETL scripts for data extraction and loading.
-- `requirements.txt`: List of Python package dependencies.
-- `tests/`: Test cases for the API.
+- **`app/`**: The core directory where the FastAPI application is located.
+  - **`crud/`**: Contains CRUD operation functions, interacting with the database for data manipulation.
+  - **`db/`**: Houses database configuration, models, and migration scripts, defining the database schema.
+  - **`etl/`**: Contains scripts for Extract, Transform, Load processes, populating the database from external sources.
+  - **`schemas/`**: Defines Pydantic models for request and response data validation, ensuring data adheres to a specified format.
+  - **`settings.py`**: Configuration settings for the app, including environment-specific settings.
+  - **`main.py`**: Entry point of the FastAPI application, including the app instance and routes.
+
+- **`alembic/`**: Alembic configurations for database migrations.
+
+- **`Dockerfile`**: Docker configuration file to containerize the application.
+
+- **`docker-compose.yml`**: Orchestrates multi-container Docker applications, managing services like the app and database.
+
+- **`requirements.txt`**: Lists all package dependencies, installable via `pip install -r requirements.txt`.
+
+- **`tests/`**: Test cases and suites for ensuring API functionality, crucial for CI processes and code quality.
+
+- **`alembic.ini`**: Configuration file for managing database migrations with Alembic.
+
 
 ## Getting Started
 
