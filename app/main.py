@@ -1,18 +1,17 @@
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, status, Depends, HTTPException, Request
+from fastapi import FastAPI, status, Depends, HTTPException, Request, Query
 from app.db.database import SessionLocal
 from app.db import models
-from app.schemas import schemas
-from sqlalchemy.orm import Session
-from typing import List
+from app.schemas.schemas import Header, SchoolSearchResponse, SchoolBase
+from sqlalchemy.orm import Session, joinedload
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from functools import lru_cache
+from . import settings
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+def get_db():
     """Context manager to ensure database connection is closed after request lifecycle."""
     db = SessionLocal()
     try:
@@ -22,7 +21,14 @@ async def lifespan(app: FastAPI):
 
 
 limiter = Limiter(key_func=get_remote_address)
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
+
+
+@lru_cache
+def get_settings():
+    return settings.Settings()
+
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -46,60 +52,118 @@ def home():
     return {"health_check": "OK"}
 
 
-@app.get("/v1/schools/{unitid}", status_code=status.HTTP_200_OK)
-@limiter.limit("5/minute")
-def get_school_by_unitid(
-    unitid: int, request: Request, db: Session = Depends(lifespan)
-):
-    """
-    Retrieve a school by its unit ID with rate limiting.
-
-    Args:
-    - unitid (int): The unique identifier for the school.
-    - db (Session, optional): Database session dependency.
-
-    Returns:
-    - dict: The school information or an error message.
-    """
-    db_school = db.query(models.School).filter(models.School.unitid == unitid).first()
-    if db_school is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="School not found"
-        )
-    return db_school
-
-
-@app.get("/v1/schools/{school_name}", status_code=status.HTTP_200_OK)
+@app.get(
+    "/v1/schools/", status_code=status.HTTP_200_OK, response_model=SchoolSearchResponse
+)
 @limiter.limit("5/minute")
 def get_schools_by_name(
-    school_name: str,
     request: Request,
-    skip: int | None = 0,
-    limit: int | None = 100,
-    db: Session = Depends(lifespan),
-):
+    school_name: str | None = Query(
+        None, description="The partial or full name of the school to search for."
+    ),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, gt=0, le=1000),
+    db: Session = Depends(get_db),
+) -> SchoolSearchResponse:
     """
-    Retrieve a list of schools by name with pagination and rate limiting.
+    Retrieves a list of schools matching the given search criteria with support for pagination.
+    This endpoint is rate-limited to 5 requests per minute per user to ensure fair usage.
+
+    The search is performed case-insensitively on the full or partial school name provided.
+    Use the `skip` and `limit` query parameters to navigate through the results for large data sets.
 
     Args:
-    - school_name (str): The name or partial name to search for.
-    - db (Session, optional): Database session dependency.
-    - skip (int, optional): Number of records to skip for pagination.
-    - limit (int, optional): Maximum number of records to return.
+    - school_name (str, optional): The partial or full name of the school to search for. Defaults to None.
+    - skip (int): The number of records to skip before starting to collect the response set. Defaults to 0.
+    - limit (int): The maximum number of records to return. Defaults to 100 but can be adjusted as needed.
 
     Returns:
-    - List[schemas.School]: A list of schools matching the search criteria.
+    SchoolSearchResponse: A JSON object with two main components:
+    - `header`: Contains metadata such as the total number of matching records, the number of records skipped, and the limit applied.
+    - `results`: A list of schools matching the search criteria. Each school includes basic information and a unique identifier.
+
+    Example Input:
+    GET /v1/schools/?school_name=California&skip=0&limit=10
+
+    Note:
+    - Exceeding the rate limit will result in a 429 status code.
+    - An empty `results` list indicates no schools were found matching the criteria.
+    - For best performance, it is recommended to keep the `limit` value reasonable, especially for broad searches.
     """
-    school_name_pattern = school_name.lower() + "%"
-    schools = (
-        db.query(models.School)
-        .filter(models.School.name.ilike(school_name_pattern))
-        .offset(skip)
-        .limit(limit)
-        .all()
+    query = db.query(models.School)
+    if school_name:
+        school_name_pattern = f"%{school_name.lower()}%"
+        query = query.filter(models.School.name.ilike(school_name_pattern))
+
+    total = query.count()
+    schools = query.offset(skip).limit(limit).all()
+    results = [models.School.from_orm(school) for school in schools]
+
+    header = Header(total=total, skip=skip, limit=limit)
+    return SchoolSearchResponse(header=header, results=results)
+
+
+@app.get(
+    "/v1/schools/state/",
+    status_code=status.HTTP_200_OK,
+    response_model=SchoolSearchResponse,
+)
+@limiter.limit("5/minute")
+def get_school_by_state(
+    request: Request,
+    state_name: str | None = Query(
+        None, description="The state to get all schools from."
+    ),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, gt=0, le=1000),
+    db: Session = Depends(get_db),
+) -> SchoolSearchResponse:
+    """
+    Retrieves a list of schools matching the given state with support for pagination.
+    This endpoint is rate-limited to 5 requests per minute per user to ensure fair usage.
+
+    The search is performed case-insensitively on the full or partial school name provided.
+    Use the `skip` and `limit` query parameters to navigate through the results for large data sets.
+
+    Args:
+    - state_name (str, optional): The partial or full name of the school to search for. Defaults to None.
+    - skip (int): The number of records to skip before starting to collect the response set. Defaults to 0.
+    - limit (int): The maximum number of records to return. Defaults to 100 but can be adjusted as needed.
+
+    Returns:
+    SchoolSearchResponse: A JSON object with two main components:
+    - `header`: Contains metadata such as the total number of matching records, the number of records skipped, and the limit applied.
+    - `results`: A list of schools matching the search criteria along with location information
+
+    Example Input:
+    GET /v1/schools/state/?state_name=California&skip=0&limit=10
+
+    Note:
+    - Exceeding the rate limit will result in a 429 status code.
+    - An empty `results` list indicates no schools were found matching the criteria.
+    - For best performance, it is recommended to keep the `limit` value reasonable, especially for broad searches.
+    """
+    query = db.query(models.School).join(
+        models.School, models.Location.school_unitid == models.School.unitid
     )
-    if not schools:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Schools not found"
+    if state_name:
+        state_name = f"%{state_name.lower()}%"
+        query = query.filter(models.Location.state.ilike(state_name)).options(
+            joinedload(models.Location)
         )
-    return schools
+
+    total = query.count()
+    schools = query.offset(skip).limit(limit).all()
+
+    results = []
+    for school in schools:
+        school_data = SchoolBase(
+            unitid=school.unitid,
+            name=school.name,
+            url=school.url,
+            location=school.location,
+        )
+        results.append(school_data)
+
+    header = Header(total=total, skip=skip, limit=limit)
+    return SchoolSearchResponse(header=header, results=results)

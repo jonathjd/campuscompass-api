@@ -1,10 +1,14 @@
 from pydantic import BaseModel, HttpUrl
-from typing import List
-import datetime
+from datetime import date
+
+
+class Header(BaseModel):
+    total: int
+    skip: int
+    limit: int
 
 
 class LocationBase(BaseModel):
-    school_unitid: int
     city: str
     zipcode: str
     state: str
@@ -13,8 +17,7 @@ class LocationBase(BaseModel):
 
 
 class FinanceBase(BaseModel):
-    school_unitid: int
-    year: datetime.date
+    year: date
     cost_attendance: float
     avg_net_price: float | None = None
     in_state_tuition: float
@@ -25,7 +28,6 @@ class FinanceBase(BaseModel):
 
 
 class ControlBase(BaseModel):
-    school_unitid: int
     under_investigation: bool | None = None
     predominant_deg: str
     highest_deg: str
@@ -33,12 +35,11 @@ class ControlBase(BaseModel):
     hbcu: bool | None = None
     religious_affiliation: str | None = None
     carnegie_undergrad: str
-    carnegie_size: str
+    carnegie_size: str | None = None
 
 
 class AdmissionBase(BaseModel):
-    school_unitid: int
-    year: datetime.date
+    year: date
     admission_rate: float
     number_of_students: int | None = None
     sat_math_median: float | None = None
@@ -51,49 +52,19 @@ class AdmissionBase(BaseModel):
     avg_sat_score_admitted: float | None = None
 
 
-class Location(LocationBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
-class Finance(FinanceBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
-class Control(ControlBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
-class Admission(AdmissionBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
 class SchoolBase(BaseModel):
     unitid: int
     name: str
     url: HttpUrl | None = None
+    location: LocationBase | None = None
+    finances: list[FinanceBase] | None = None
+    admissions: list[AdmissionBase] | None = None
+    control: ControlBase | None = None
 
 
-class SchoolCreate(SchoolBase):
-    pass
-
-
-class School(SchoolBase):
-    locations: List[Location] = []
-    finances: List[Finance] = []
-    controls: List[Control] = []
-    admissions: List[Admission] = []
+class SchoolSearchResponse(BaseModel):
+    header: Header
+    results: list[SchoolBase]
 
     class Config:
         orm_mode = True
