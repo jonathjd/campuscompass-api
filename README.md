@@ -37,7 +37,7 @@ Here's how you can set up your development environment:
    pip install -r requirements.txt
    ```
 
-4. **Start Docker Containers** (if applicable):
+4. **Start Docker Containers** (optional):
    ```bash
    docker-compose up -d
    ```
