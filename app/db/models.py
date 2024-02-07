@@ -23,7 +23,7 @@ class Location(Base):
     city = Column(String, nullable=False)
     zipcode = Column(String, nullable=False)
     state = Column(String, nullable=False)
-    region = Column(String, nullable=False)
+    region = Column(String, nullable=True)
     locale = Column(String, nullable=True)
 
     # Relationship with School

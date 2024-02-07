@@ -8,12 +8,15 @@ from app import settings
 from app.routers import locations
 from app.dependencies.dependencies import limiter
 
-app = FastAPI()
-
 
 @lru_cache
 def get_settings():
     return settings.Settings()
+
+
+config = get_settings()
+
+app = FastAPI(title=config.app_name)
 
 
 app.state.limiter = limiter
