@@ -9,7 +9,7 @@ router = APIRouter(prefix="/v1/schools", tags=["locations"])
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=SchoolSearchResponse)
 @limiter.limit("5/minute")
-async def get_schools_by_name(
+def get_schools_by_name(
     request: Request,
     school_name: str = Query(
         None, description="The partial or full name of the school to search for."
@@ -61,7 +61,7 @@ async def get_schools_by_name(
     response_model=SchoolSearchResponse,
 )
 @limiter.limit("5/minute")
-async def get_school_by_state(
+def get_school_by_state(
     request: Request,
     state_name: str = Query(None, description="The state to get all schools from."),
     skip: int = Query(default=0, ge=0),
@@ -123,7 +123,7 @@ async def get_school_by_state(
     response_model=SchoolSearchResponse,
 )
 @limiter.limit("5/minute")
-async def get_school_by_region(
+def get_school_by_region(
     request: Request,
     region: str = Query(None, description="The region to get all schools from."),
     skip: int = Query(default=0, ge=0),
@@ -200,7 +200,7 @@ async def get_school_by_region(
     response_model=SchoolSearchResponse,
 )
 @limiter.limit("5/minute")
-async def get_school_by_locale(
+def get_school_by_locale(
     request: Request,
     locale: str = Query(None, description="The locale to get all schools from."),
     skip: int = Query(default=0, ge=0),
@@ -268,7 +268,7 @@ async def get_school_by_locale(
     response_model=SchoolSearchResponse,
 )
 @limiter.limit("5/minute")
-async def get_school_by_zip(
+def get_school_by_zip(
     request: Request,
     zipcode: str = Query(None, description="The zipcode to get all schools from."),
     skip: int | None = Query(default=0, ge=0),

@@ -1,6 +1,6 @@
 import logging
 from college_scorecard_api import get_college_data
-from app.db.models import School
+from app.db.models import School, Base
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
@@ -18,8 +18,9 @@ load_dotenv()
 # db
 try:
     DATABASE_URI = os.getenv("DATABASE_URI")
-    engine = create_engine(DATABASE_URI)
+    engine = create_engine(DATABASE_URI, connect_args={"check_same_thread": False})
     Session = sessionmaker(bind=engine)
+    Base.metadata.create_all(engine)
 except SQLAlchemyError as e:
     logging.error("Database error: %s", e)
     exit(1)
