@@ -17,8 +17,8 @@ load_dotenv()
 
 def main():
     try:
-        DATABASE_URI = os.getenv("DATABASE_URI")
-        engine = create_engine(DATABASE_URI)
+        TEST_DATABASE_URI = os.getenv("TEST_DATABASE_URI")
+        engine = create_engine(TEST_DATABASE_URI)
         Session = sessionmaker(bind=engine)
     except SQLAlchemyError as e:
         logging.error("Database error: %s", e)
@@ -40,7 +40,7 @@ def main():
     ]
 
     try:
-        data = get_college_data(api_key=API_KEY, fields=fields)
+        data = get_college_data(api_key=API_KEY, fields=fields, page_limit=2)
         logging.info("Data fetched from College Scorecard API.")
     except Exception as e:
         logging.error("Error fetching data from API: %s", e)

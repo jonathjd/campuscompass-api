@@ -17,8 +17,8 @@ load_dotenv()
 
 # db
 try:
-    DATABASE_URI = os.getenv("DATABASE_URI")
-    engine = create_engine(DATABASE_URI, connect_args={"check_same_thread": False})
+    TEST_DATABASE_URI = os.getenv("TEST_DATABASE_URI")
+    engine = create_engine(TEST_DATABASE_URI, connect_args={"check_same_thread": False})
     Session = sessionmaker(bind=engine)
     Base.metadata.create_all(engine)
 except SQLAlchemyError as e:
@@ -34,7 +34,7 @@ if not API_KEY:
 fields = ["id", "school.name", "school.school_url"]
 
 try:
-    data = get_college_data(api_key=API_KEY, fields=fields)
+    data = get_college_data(api_key=API_KEY, fields=fields, page_limit=3)
     logging.info("Data fetched from College Scorecard API.")
 except Exception as e:
     logging.error("Error fetching data from API: %s", e)
