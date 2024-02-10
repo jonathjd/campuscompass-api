@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, ConfigDict
 from datetime import date
 
 
@@ -53,6 +53,8 @@ class AdmissionBase(BaseModel):
 
 
 class SchoolBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     unitid: int
     name: str
     url: HttpUrl | None = None
@@ -65,6 +67,3 @@ class SchoolBase(BaseModel):
 class SchoolSearchResponse(BaseModel):
     header: Header
     results: list[SchoolBase]
-
-    class Config:
-        orm_mode = True
