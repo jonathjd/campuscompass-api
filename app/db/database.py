@@ -8,9 +8,7 @@ load_dotenv()
 
 DATABASE_URI = os.getenv("DATABASE_URI")
 
-engine = create_engine(
-    "sqlite:///./compass_db.db", connect_args={"check_same_thread": False}
-)
+engine = create_engine(DATABASE_URI, connect_args={"check_same_thread": False})
 
 
 @event.listens_for(Engine, "connect")

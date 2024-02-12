@@ -17,8 +17,8 @@ load_dotenv()
 
 def main():
     try:
-        TEST_DATABASE_URI = os.getenv("TEST_DATABASE_URI")
-        engine = create_engine(TEST_DATABASE_URI)
+        DATABASE_URI = os.getenv("DATABASE_URI")
+        engine = create_engine(DATABASE_URI)
         Session = sessionmaker(bind=engine)
     except SQLAlchemyError as e:
         logging.error("Database error: %s", e)

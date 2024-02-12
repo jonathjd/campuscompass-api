@@ -17,8 +17,8 @@ load_dotenv()
 
 # db
 try:
-    TEST_DATABASE_URI = os.getenv("TEST_DATABASE_URI")
-    engine = create_engine(TEST_DATABASE_URI, connect_args={"check_same_thread": False})
+    DATABASE_URI = os.getenv("DATABASE_URI")
+    engine = create_engine(DATABASE_URI, connect_args={"check_same_thread": False})
     Session = sessionmaker(bind=engine)
     Base.metadata.create_all(engine)
 except SQLAlchemyError as e:
