@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl, ConfigDict
+from pydantic import BaseModel, HttpUrl, ConfigDict, validator
 from datetime import date
 
 
@@ -9,6 +9,8 @@ class Header(BaseModel):
 
 
 class LocationBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     city: str
     zipcode: str
     state: str
@@ -17,6 +19,8 @@ class LocationBase(BaseModel):
 
 
 class FinanceBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     year: date
     cost_attendance: float
     avg_net_price: float | None = None
@@ -28,6 +32,8 @@ class FinanceBase(BaseModel):
 
 
 class ControlBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     under_investigation: bool | None = None
     predominant_deg: str
     highest_deg: str
@@ -39,6 +45,8 @@ class ControlBase(BaseModel):
 
 
 class AdmissionBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     year: date
     admission_rate: float
     number_of_students: int | None = None
@@ -62,6 +70,12 @@ class SchoolBase(BaseModel):
     finances: list[FinanceBase] | None = None
     admissions: list[AdmissionBase] | None = None
     control: ControlBase | None = None
+
+    @validator("url", pre=True, always=True)
+    def ensure_url_scheme(cls, v):
+        if v and not v.startswith(("http://", "https://")):
+            return f"http://{v}"
+        return v
 
 
 class SchoolSearchResponse(BaseModel):

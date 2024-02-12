@@ -86,9 +86,8 @@ def main():
             data["school.locale"],
         ):
             unitid = location[0]
-            state = location[1]
-            city = location[2]
-
+            city = location[1]
+            state = location[2]
             zipcode = transform_zipcode(location[3])
 
             region_number = location[4]

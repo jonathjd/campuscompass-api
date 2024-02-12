@@ -1,6 +1,6 @@
-from fastapi import APIRouter, status, Depends, Request, Query
+from fastapi import APIRouter, status, Depends, Request, Query, HTTPException
 from app.db import models
-from app.schemas.schemas import Header, SchoolSearchResponse, SchoolBase
+from app.schemas.schemas import Header, SchoolSearchResponse, SchoolBase, LocationBase
 from sqlalchemy.orm import Session, joinedload
 from app.dependencies.dependencies import limiter, get_db
 
@@ -49,7 +49,7 @@ def get_schools_by_name(
 
     total = query.count()
     schools = query.offset(skip).limit(limit).all()
-    results = [models.School.from_orm(school) for school in schools]
+    results = [SchoolBase.model_validate(school) for school in schools]
 
     header = Header(total=total, skip=skip, limit=limit)
     return SchoolSearchResponse(header=header, results=results)
@@ -63,7 +63,7 @@ def get_schools_by_name(
 @limiter.limit("5/minute")
 def get_school_by_state(
     request: Request,
-    state_name: str = Query(None, description="The state to get all schools from."),
+    state_code: str = Query(None, description="The state to get all schools from."),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, gt=0, le=1000),
     db: Session = Depends(get_db),
@@ -72,11 +72,11 @@ def get_school_by_state(
     Retrieves a list of schools matching the given state with support for pagination.
     This endpoint is rate-limited to 5 requests per minute per user to ensure fair usage.
 
-    The search is performed case-insensitively on the full or partial state provided.
+    The search is performed case-insensitively.
     Use the `skip` and `limit` query parameters to navigate through the results for large data sets.
 
     Args:
-    - state_name (str, optional): The partial or full name of the school to search for. Defaults to None.
+    - state_code (str, optional): The state code of the school to search for. Defaults to None.
     - skip (int): The number of records to skip before starting to collect the response set. Defaults to 0.
     - limit (int): The maximum number of records to return. Defaults to 100 but can be adjusted as needed.
 
@@ -86,18 +86,21 @@ def get_school_by_state(
     - `results`: A list of schools matching the search criteria along with location information
 
     Example Input:
-    GET /v1/schools/state/?state_name=California&skip=0&limit=10
+    GET /v1/schools/state/?state_code=CA&skip=0&limit=10
 
     Note:
     - Exceeding the rate limit will result in a 429 status code.
     - An empty `results` list indicates no schools were found matching the criteria.
     - For best performance, it is recommended to keep the `limit` value reasonable, especially for broad searches.
     """
+
+    if state_code is None:
+        raise HTTPException(status_code=400, detail="State code is required.")
     query = (
         db.query(models.School)
-        .join(models.School, models.Location.school_unitid == models.School.unitid)
-        .filter(models.Location.state.ilike(f"%{state_name.lower()}%"))
-        .options(joinedload(models.Location))
+        .join(models.Location)
+        .filter(models.Location.state.ilike(f"%{state_code.lower()}%"))
+        .options(joinedload(models.School.locations))
     )
 
     total = query.count()
@@ -105,11 +108,18 @@ def get_school_by_state(
 
     results = []
     for school in schools:
+        location_data = next(iter(school.locations or []), None)
+        location = None
+        if location_data:
+            location = LocationBase(
+                city=location_data.city,
+                state=location_data.state,
+                zipcode=location_data.zipcode,
+                region=location_data.region,
+                locale=location_data.locale,
+            )
         school_data = SchoolBase(
-            unitid=school.unitid,
-            name=school.name,
-            url=school.url,
-            location=school.location,
+            unitid=school.unitid, name=school.name, url=school.url, location=location
         )
         results.append(school_data)
 
@@ -169,24 +179,32 @@ def get_school_by_region(
     - An empty `results` list indicates no schools were found matching the criteria.
     - For best performance, it is recommended to keep the `limit` value reasonable, especially for broad searches.
     """
-
+    if region is None:
+        raise HTTPException(status_code=400, detail="State code is required.")
     query = (
         db.query(models.School)
-        .join(models.School, models.Location.school_unitid == models.School.unitid)
-        .filter(models.location.region.ilike(f"%{region.lower()}%"))
-        .options(joinedload(models.Location))
+        .join(models.Location)
+        .filter(models.Location.region.ilike(f"%{region.lower()}%"))
+        .options(joinedload(models.School.locations))
     )
 
     total = query.count()
     schools = query.offset(skip).limit(limit).all()
-    results = []
 
+    results = []
     for school in schools:
+        location_data = next(iter(school.locations or []), None)
+        location = None
+        if location_data:
+            location = LocationBase(
+                city=location_data.city,
+                state=location_data.state,
+                zipcode=location_data.zipcode,
+                region=location_data.region,
+                locale=location_data.locale,
+            )
         school_data = SchoolBase(
-            unitid=school.unitid,
-            name=school.name,
-            url=school.url,
-            location=school.location,
+            unitid=school.unitid, name=school.name, url=school.url, location=location
         )
         results.append(school_data)
 
@@ -238,23 +256,32 @@ def get_school_by_locale(
     - For best performance, it is recommended to keep the `limit` value reasonable, especially for broad searches.
     """
 
+    if locale is None:
+        raise HTTPException(status_code=400, detail="State code is required.")
     query = (
         db.query(models.School)
-        .join(models.School, models.Location.school_unitid == models.School.unitid)
-        .filter(models.location.locale.ilike(f"%{locale.lower()}%"))
-        .options(joinedload(models.Location))
+        .join(models.Location)
+        .filter(models.Location.locale.ilike(f"%{locale.lower()}%"))
+        .options(joinedload(models.School.locations))
     )
 
     total = query.count()
     schools = query.offset(skip).limit(limit).all()
-    results = []
 
+    results = []
     for school in schools:
+        location_data = next(iter(school.locations or []), None)
+        location = None
+        if location_data:
+            location = LocationBase(
+                city=location_data.city,
+                state=location_data.state,
+                zipcode=location_data.zipcode,
+                region=location_data.region,
+                locale=location_data.locale,
+            )
         school_data = SchoolBase(
-            unitid=school.unitid,
-            name=school.name,
-            url=school.url,
-            location=school.location,
+            unitid=school.unitid, name=school.name, url=school.url, location=location
         )
         results.append(school_data)
 
@@ -298,23 +325,32 @@ def get_school_by_zip(
     - For best performance, it is recommended to keep the `limit` value reasonable, especially for broad searches.
     """
 
+    if zipcode is None:
+        raise HTTPException(status_code=400, detail="State code is required.")
     query = (
         db.query(models.School)
-        .join(models.School, models.Location.school_unitid == models.School.unitid)
-        .filter(models.location.locale.ilike(zipcode))
-        .options(joinedload(models.Location))
+        .join(models.Location)
+        .filter(models.Location.zipcode.ilike(f"%{zipcode.lower()}%"))
+        .options(joinedload(models.School.locations))
     )
 
     total = query.count()
     schools = query.offset(skip).limit(limit).all()
-    results = []
 
+    results = []
     for school in schools:
+        location_data = next(iter(school.locations or []), None)
+        location = None
+        if location_data:
+            location = LocationBase(
+                city=location_data.city,
+                state=location_data.state,
+                zipcode=location_data.zipcode,
+                region=location_data.region,
+                locale=location_data.locale,
+            )
         school_data = SchoolBase(
-            unitid=school.unitid,
-            name=school.name,
-            url=school.url,
-            location=school.location,
+            unitid=school.unitid, name=school.name, url=school.url, location=location
         )
         results.append(school_data)
 
