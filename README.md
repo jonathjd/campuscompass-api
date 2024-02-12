@@ -2,67 +2,72 @@
 
 ## Overview
 
-Campus Compass API is a backend service designed to provide comprehensive information about educational institutions. This API is built with Python, using FastAPI as the web framework, SQLAlchemy for database interactions, and Alembic for database migrations.
-
-## Repository Structure
-
-- **`app/`**: The core directory where the FastAPI application is located.
-  - **`crud/`**: Contains CRUD operation functions, interacting with the database for data manipulation.
-  - **`db/`**: Houses database configuration, models, and migration scripts, defining the database schema.
-  - **`etl/`**: Contains scripts for Extract, Transform, Load processes, populating the database from external sources.
-  - **`schemas/`**: Defines Pydantic models for request and response data validation, ensuring data adheres to a specified format.
-  - **`settings.py`**: Configuration settings for the app, including environment-specific settings.
-  - **`main.py`**: Entry point of the FastAPI application, including the app instance and routes.
-
-- **`alembic/`**: Alembic configurations for database migrations.
-
-- **`Dockerfile`**: Docker configuration file to containerize the application.
-
-- **`docker-compose.yml`**: Orchestrates multi-container Docker applications, managing services like the app and database.
-
-- **`requirements.txt`**: Lists all package dependencies, installable via `pip install -r requirements.txt`.
-
-- **`tests/`**: Test cases and suites for ensuring API functionality, crucial for CI processes and code quality.
-
-- **`alembic.ini`**: Configuration file for managing database migrations with Alembic.
+Welcome! This repo contains a backend web API that build with FastAPI and allows users to query the [College Scorecard API](https://collegescorecard.ed.gov/data/documentation/) effeciently and quickly. Follow the getting started steps to begin contributing!
 
 
 ## Getting Started
 
 Here's how you can set up your development environment:
 
-1. **Clone the Repository**:
+1. **Fork** the repository on GitHub.
+
+2. **Clone** your fork to your local machine:
    ```bash
-   git clone https://github.com/your-repo/campuscompass-api.git
-   cd campuscompass-api
+   git clone https://github.com/your-username/campuscompass-api.git
+   cd campuscompass-api/
    ```
 
-2. **Set Up a Virtual Environment**:
+3. Create and activate virtual environment:
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate
+   python -m venv venv
+   source venv/bin/activate
    ```
 
-3. **Install Dependencies**:
+4. Install dependencies
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Start Docker Containers** (optional):
+5. **Create Image and Build the Docker Container**:
+The api is containerized using Docker, run the below commands to build and run the containers.
    ```bash
-   docker-compose up -d
+   docker-compose build --no-cache
+   docker-compose up -d # -d flag detaches from terminal
    ```
+
+To run the application locally, run the following command-
 
 5. **Start the FastAPI Server**:
    ```bash
    uvicorn app.main:app --reload
    ```
+The `--reload` command will dynamically reload your server with the updated changes.
 
-## Contribution
+## Development
 
-- **Routes**: Implementing and refining FastAPI routes for various functionalities.
-- **Testing**: Developing a comprehensive test suite to ensure reliability and performance.
-- **Database Setup**: Finalizing the database configurations, models, and setting up the initial database.
+1. Create a new **branch** for your development:
+   ```bash
+   git checkout -b feat/your-feature-branch
+   ```
+
+2. Make your changes and **test** them with pytest:
+   ```bash
+   pytest
+   ```
+
+3. If all tests pass **commit** them:
+   ```bash
+   git commit -am "Add some feature"
+   ```
+
+4. **Push** the changes to your fork:
+   ```bash
+   git push origin your-feature-branch
+   ```
+
+5. Submit a **Pull Request** through GitHub to the original repository.
+
+Linting (with flake8 and black) and testing (with pytest) will be automatically applied to pull requests via GitHub Actions.
 
 ## Community and Support
 
