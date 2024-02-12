@@ -3,7 +3,7 @@ name: Lint and run tests
 on:
   push:
     branches:
-      - staging
+      - main
 
 jobs:
   build:
