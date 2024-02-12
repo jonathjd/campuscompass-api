@@ -34,7 +34,7 @@ if not API_KEY:
 fields = ["id", "school.name", "school.school_url"]
 
 try:
-    data = get_college_data(api_key=API_KEY, fields=fields)
+    data = get_college_data(api_key=API_KEY, fields=fields, page_limit=3)
     logging.info("Data fetched from College Scorecard API.")
 except Exception as e:
     logging.error("Error fetching data from API: %s", e)

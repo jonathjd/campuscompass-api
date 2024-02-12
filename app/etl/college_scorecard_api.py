@@ -32,7 +32,7 @@ def get_college_data(api_key, fields, page_limit=None):
 
     logging.info("Starting to fetch data from College Scorecard API.")
     base_url = "https://api.data.gov/ed/collegescorecard/v1/schools.json"
-    data_dictionary = {field: [] for field in fields}  # Dictionary to store the data
+    data_dictionary = {field: [] for field in fields}
     page_num = 0
 
     while True:
